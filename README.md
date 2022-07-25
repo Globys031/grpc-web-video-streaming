@@ -7,10 +7,10 @@ In my case, I placed protoc-gen-go in `C:\Users\justi\.local`.
 ### Get started (with HTTP 1.1)
 
 Change directory into the root of the project
-* `docker compose up` (not necessary. Not sure why, but works fine without envoy.)
+* `docker compose up` (not necessary. Not sure why, but works fine without envoy. For now skip this)
 * `npm install`
 * `npm start` to start the Golang server and Webpack dev server
-* Go to `http://localhost:8080`
+* Go to `http://127.0.0.1:8080/`
 
 Run `docker exec -it envoy-container bash` to attach to the envoy container.
 
@@ -19,6 +19,8 @@ Modified this part in package.json to exclude `go run <. . .>`:
 "start": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
 ```
 so additionally have to run `go run go/exampleserver/exampleserver.go`
+
+For whatever reason localhost isn't resolving properly when using envoy, so specifiy "127.0.0.1" instead of localhost.
 
 ### Using HTTP2
 

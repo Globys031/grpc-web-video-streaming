@@ -31,6 +31,7 @@ func allowedOriginCors(origin string) bool {
 	allowedOrigins := []string{
 		"http://localhost:8080",
 		"https://localhost:8080",
+		"http://127.0.0.1:8080",
 	}
 	for _, allowedOrigin := range allowedOrigins {
 		if allowedOrigin == origin {

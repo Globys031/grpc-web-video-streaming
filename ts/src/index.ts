@@ -11,7 +11,7 @@ function getBook() {
 
   var customHeaders:grpc.Metadata = new grpc.Metadata;
   // customHeaders.append("Access-Control-Allow-Origin", "127.0.0.1:8080")
-  // customHeaders.append("referer", "127.0.0.1:8080")
+  // customHeaders.append("Referer", "127.0.0.1:8080")
   // customHeaders.append("Origin", "http://127.0.0.1:8080")
 
   grpc.unary(BookService.GetBook, {
