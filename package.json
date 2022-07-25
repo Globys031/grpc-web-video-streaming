@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
-    "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack serve --watch --hot --inline --port 8082 --host 127.0.0.1 --output-public-path=https://localhost:8082/build/ --https --cert=../../../misc/localhost.crt --key=../../../misc/localhost.key",
-    "webpack-dev": "cd ts && webpack serve --hot --inline --port 8081 --host 127.0.0.1 --output-public-path=http://localhost:8081/build/",
+    "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack serve --watch --hot --inline --port 8081 --host 127.0.0.1 --output-public-path=https://localhost:8082/build/ --https --cert=../../../misc/localhost.crt --key=../../../misc/localhost.key",
+    "webpack-dev": "cd ts && webpack serve --hot --inline --port 8080 --host 127.0.0.1 --output-public-path=http://localhost:8081/build/",
     "start:tls": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
-    "start": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
+    "start": "concurrently --kill-others \"npm run webpack-dev\""
   },
   "license": "none",
   "dependencies": {

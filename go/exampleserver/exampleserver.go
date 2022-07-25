@@ -27,6 +27,19 @@ var (
 	tlsKeyFilePath  = flag.String("tls_key_file", "../../misc/localhost.key", "Path to the private key file.")
 )
 
+func allowedOriginCors(origin string) bool {
+	allowedOrigins := []string{
+		"http://localhost:8080",
+		"https://localhost:8080",
+	}
+	for _, allowedOrigin := range allowedOrigins {
+		if allowedOrigin == origin {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	flag.Parse()
 
@@ -39,13 +52,13 @@ func main() {
 	library.RegisterBookServiceServer(grpcServer, &bookService{})
 	grpclog.SetLogger(log.New(os.Stdout, "exampleserver: ", log.LstdFlags))
 
-	wrappedServer := grpcweb.WrapServer(grpcServer)
+	wrappedServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(allowedOriginCors))
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 
-	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("127.0.0.1:%d", port),
 		Handler: http.HandlerFunc(handler),
 	}
 
@@ -92,6 +105,9 @@ var books = []*library.Book{
 }
 
 func (s *bookService) GetBook(ctx context.Context, bookQuery *library.GetBookRequest) (*library.Book, error) {
+	// customMetadata := *&metadata.MD{}
+	// customMetadata.Append("Access-Control-Allow-Origin", "*")
+	// grpc.SendHeader(ctx, customMetadata)
 	grpc.SendHeader(ctx, metadata.Pairs("Pre-Response-Metadata", "Is-sent-as-headers-unary"))
 	grpc.SetTrailer(ctx, metadata.Pairs("Post-Response-Metadata", "Is-sent-as-trailers-unary"))
 

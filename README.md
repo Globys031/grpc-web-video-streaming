@@ -1,5 +1,3 @@
-# gRPC-Web-Example: A simple Golang API server and TypeScript frontend
-
 # grpc-web-video-streaming
 
 Video Streaming service built using grpc-web. Project itself was written on Windows 10
@@ -8,17 +6,30 @@ In my case, I placed protoc-gen-go in `C:\Users\justi\.local`.
 
 ### Get started (with HTTP 1.1)
 
+Change directory into the root of the project
+* `docker compose up` (not necessary. Not sure why, but works fine without envoy.)
 * `npm install`
 * `npm start` to start the Golang server and Webpack dev server
-* Go to `http://localhost:8081`
+* Go to `http://localhost:8080`
+
+Run `docker exec -it envoy-container bash` to attach to the envoy container.
+
+Modified this part in package.json to exclude `go run <. . .>`:
+```
+"start": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
+```
+so additionally have to run `go run go/exampleserver/exampleserver.go`
 
 ### Using HTTP2
+
+***Work in progress, ignore this part***
 
 HTTP2 requires TLS. This repository contains certificates in the `../misc` directory which are used by the server. You can optionally generate your own replacements using the `gen_cert.sh` in the same directory.
 You will need to import the `../misc/localhostCA.pem` certificate authority into your browser, checking the "Trust this CA to identify websites" so that your browser trusts the localhost server.
 
+* `docker run --name envoy-container --rm envoyproxy/envoy-dev:2ee5600abd1c64da0c0d0c8b12a9f6f5a3bf98e2`
 * `npm run start:tls` to start the Golang server and Webpack dev server with the certificates in `misc`
-* Go to `https://localhost:8082`
+* Go to `https://localhost:8081`
 
 ### Generating proto files
 
@@ -43,5 +54,8 @@ protoc \
 
 Written by referencing the following sources:
 * https://github.com/improbable-eng/grpc-web/tree/master/client/grpc-web-react-example
-* https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy (at the bottom specifies what two proxies could be used)
 * https://github.com/improbable-eng/ts-protoc-gen
+* https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-metadata.md
+* https://www.envoyproxy.io/docs/envoy/latest/start/sandboxes/cors
+* https://github.com/envoyproxy/envoy/tree/main/examples/grpc-bridge
+* https://www.polarsignals.com/blog/posts/2022/02/22/how-we-build-our-apis-from-scratch/
