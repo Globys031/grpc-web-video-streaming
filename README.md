@@ -61,3 +61,4 @@ Written by referencing the following sources:
 * https://www.envoyproxy.io/docs/envoy/latest/start/sandboxes/cors
 * https://github.com/envoyproxy/envoy/tree/main/examples/grpc-bridge
 * https://www.polarsignals.com/blog/posts/2022/02/22/how-we-build-our-apis-from-scratch/
+* https://medium.com/wesionary-team/grpc-console-chat-application-in-go-dd77a29bb5c3

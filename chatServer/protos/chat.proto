@@ -1,0 +1,45 @@
+// https://daily.dev/blog/build-a-chat-app-using-grpc-and-reactjs
+
+syntax = "proto3";
+
+package protoLibrary;
+
+option go_package = "./protoLibrary";
+
+import "google/protobuf/timestamp.proto";
+
+service ChatService {
+  rpc JoinChatroom(Chatroom) returns (stream Message) {}
+  rpc SendMessage(stream Message) returns (Response) {}
+
+  rpc InviteToChatroom(User) returns (Response) {}
+  rpc ListUsers(Chatroom) returns (UserArray) {}
+  rpc Leave(User) returns (Response) {}
+}
+
+message Chatroom {
+  int32 id = 1;
+  repeated User users = 2;
+}
+
+message User {
+  int32 userID = 1;
+  string name = 2;
+}
+
+message UserArray {
+  repeated User users = 1; // Repeated refers to array or list
+}
+
+message Message {
+  int32 chatroomID = 1;
+  int32 messageID = 2;
+  User user = 3;
+  string message = 4;
+  google.protobuf.Timestamp sendTime = 5; // https://stackoverflow.com/questions/3574716/date-and-time-type-for-use-with-protobuf
+}
+
+message Response {
+  string msg = 1;
+  int32 error = 2;
+}
