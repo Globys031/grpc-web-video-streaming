@@ -1,0 +1,24 @@
+{
+  "name": "grpc-web-video-streaming",
+  "version": "0.15.0",
+  "private": true,
+  "scripts": {
+    "generate_cert": "cd ../misc ./gen_cert.sh",
+    "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack serve --watch --hot --inline --port 8081 --host 127.0.0.1 --output-public-path=https://localhost:8082/build/ --https --cert=../../../misc/localhost.crt --key=../../../misc/localhost.key",
+    "webpack-dev": "cd ts && webpack serve --hot --inline --port 8080 --host 127.0.0.1 --output-public-path=http://127.0.0.1:8080/build/",
+    "start:tls": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
+    "start": "cross-env NODE_ENV=development concurrently --kill-others \"npm run webpack-dev\""
+  },
+  "license": "none",
+  "devDependencies": {
+    "css-loader": "^6.7.1",
+    "html-webpack-plugin": "^5.5.0",
+    "html-webpack-tags-plugin": "^3.0.2",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.3.1"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "mini-css-extract-plugin": "^2.6.1"
+  }
+}

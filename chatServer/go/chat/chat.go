@@ -1,4 +1,4 @@
-package main
+package chat
 
 // https://github.com/grpc/grpc-go/blob/master/Documentation/concurrency.md#servers
 // each gRPC handler is its own goroutine. Meaning, every rpc implementation here

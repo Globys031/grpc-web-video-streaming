@@ -1,6 +1,7 @@
 import {grpc} from "@improbable-eng/grpc-web";
 import {ChatService} from "../protoLibrary/chat_pb_service";
 import * as library from "../protoLibrary/chat_pb";
+import "../../static/style.css";
 
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
 
@@ -75,11 +76,12 @@ window.onload = () => {
     printError(inboxDiv, "Couldn't get inbox-div")
 
 
-    // sendButton?.onclick
-    sendButton.onclick = () => {
-        var message:library.Message = sendMessage()
-        addMessageToInbox(message, inboxDiv as HTMLElement);
-    };
+    if (sendButton != undefined) {
+        sendButton.onclick = () => {
+            var message:library.Message = sendMessage()
+            addMessageToInbox(message, inboxDiv as HTMLElement);
+        };
+    }
 };
 
 //////////////////////////////////////////////////////

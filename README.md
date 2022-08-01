@@ -14,11 +14,16 @@ Change directory into the root of the project
 
 Run `docker exec -it envoy-container bash` to attach to the envoy container.
 
-Modified this part in package.json to exclude `go run <. . .>`:
+Modified these part in package.json to exclude:
 ```
 "start": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go\" \"npm run webpack-dev\""
 ```
 so additionally have to run `go run go/exampleserver/exampleserver.go`
+
+Change from "development", to "production" to emit css files instead of loading them in DOM. Set it in package.json:
+```
+cross-env NODE_ENV=development
+```
 
 For whatever reason localhost isn't resolving properly when using envoy, so specifiy "127.0.0.1" instead of localhost.
 

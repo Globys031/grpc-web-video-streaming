@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 
 	library "grpc-web-video-streaming/chatServer/go/protoLibrary"
+
+	chat "grpc-web-video-streaming/chatServer/go/chat"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 )
@@ -44,7 +47,21 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	library.RegisterChatServiceServer(grpcServer, &ChatService{})
+
+	library.RegisterChatServiceServer(grpcServer, &chat.ChatService{
+		GlobalChatroomID: 0,
+		// buffered array of channels mapped to int keyword
+		ChanArr: make(map[int32][]chan *library.Message, 10),
+		Mutex:   sync.Mutex{},
+	})
+
+	// library.RegisterChatServiceServer(grpcServer, &ChatService{
+	// 	UnimplementedChatServiceServer: library.UnimplementedChatServiceServer{},
+	// 	GlobalChatroomID:               0,
+	// 	// buffered array of channels mapped to int keyword
+	// 	ChanArr: make(map[int32][]chan *library.Message, 10),
+	// 	Mutex:   sync.Mutex{},
+	// })
 	grpclog.SetLogger(log.New(os.Stdout, "chatserver: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(allowedOriginCors))
