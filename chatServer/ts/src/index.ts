@@ -22,14 +22,15 @@ function printError(variable:any, errorMessage:string) {
 
 // Outputs message in the browser 
 // and if sentByMe - adds the option to delete the message
-function addMessageToInbox(message: library.Message, inboxDiv:HTMLElement) {
+function addMessageToInbox(message:library.Message, inboxDiv:HTMLElement) {
     const sentByMe = me == message.getUser()?.getName();
 
     const messageDiv = document.createElement("div");
-
     messageDiv.id = `message-${message.getMessageid()}`
-    messageDiv.className = sentByMe ? "my" : "not my";
+    messageDiv.className = sentByMe ? "mine" : "not-mine";
     messageDiv.className += " message";
+
+    console.log(sentByMe)
 
     if (!sentByMe) {
         const senderP = document.createElement("p"); // creates sender paragraph
@@ -65,22 +66,26 @@ function addMessageToInbox(message: library.Message, inboxDiv:HTMLElement) {
 }
 
 window.onload = () => {
-    // liveGoll = new LiveGollection("ws://localhost:8080/livegollection");
-    const messageTextInput = document.getElementById("message-text-input");
-    printError(messageTextInput, "Couldn't get the text input field")
+    const messageTextInput = document.getElementById("message-text-input") as HTMLInputElement | null;
+    printError(messageTextInput, "Couldn't get message-text-input")
 
     const sendButton = document.getElementById("send-button");
-    printError(sendButton, "Couldn't get the send button")
+    printError(sendButton, "Couldn't get send-button")
 
     var inboxDiv = document.getElementById("inbox-div");
     printError(inboxDiv, "Couldn't get inbox-div")
 
-
-    if (sendButton != undefined) {
+    if (sendButton != undefined && inboxDiv != undefined) {
+        joinChatroom(inboxDiv)
         sendButton.onclick = () => {
-            var message:library.Message = sendMessage()
-            addMessageToInbox(message, inboxDiv as HTMLElement);
+            if (messageTextInput  != undefined) {
+                var message:library.Message = sendMessage(messageTextInput)
+            } else {
+                console.log("Message text input is undefined")
+            }
         };
+    } else {
+        console.log("send-button and or inbox-div are undefined")
     }
 };
 
@@ -89,13 +94,16 @@ window.onload = () => {
 //////////////////////////////////////////////////////
 //
 //
-function joinChatroom() {
+function joinChatroom(inboxDiv:HTMLElement) {
     const client = grpc.client(ChatService.JoinChatroom, {
         host: host,
     });
-
-
     const chatroom = new library.Chatroom();
+    // change later to instead set it at the backend side
+    // maybe add to grpc "createChatroom" and get chatroom ID from there like that
+    chatroom.setId(0)
+    client.start();
+    client.send(chatroom);
 
     // Visi sitie on, reiskia kad vykdyk kai tas ivyks.
     // Pvz atsiuncia (speju) response header'ius - vykdyt,
@@ -103,27 +111,30 @@ function joinChatroom() {
     client.onHeaders((headers: grpc.Metadata, ) => {
       console.log("chatroom.onHeaders", headers);
     });
+    // Receives message from stream
     client.onMessage((message: library.Message) => {
-      console.log("chatroom.onMessage", message.toObject());
+        addMessageToInbox(message, inboxDiv as HTMLElement)
+        console.log("chatroom.onMessage", message.toObject());
     });
     client.onEnd((code: grpc.Code, msg: string, trailers: grpc.Metadata) => {
       console.log("chatroom.onEnd", code, msg, trailers);
     });
-
-
-    client.start();
-    client.send(chatroom);
 }
-function sendMessage() : library.Message {
+function sendMessage(messageTextInput:HTMLInputElement) : library.Message {
     const client = grpc.client(ChatService.SendMessage, {
         host: host, // grpc option
     });
-
     const message = new library.Message();
+    // Sicia veiau pasiims is serverio puses koks user'is prisijunges.
+    // Dabar padarom taip, kad naujas windows = naujas user'is...
+    const user = new library.User();
+    user.setName(me)
+    message.setUser(user)
+
     const timestamp = new Timestamp();
     timestamp.fromDate(new Date());
 
-    message.setMessage("My name a tony bamanaboni. Would you like some life insurance, yes?")
+    message.setMessage(messageTextInput.value)
     message.setSendtime(timestamp)
 
     client.start();
