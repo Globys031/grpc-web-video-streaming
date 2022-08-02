@@ -5,7 +5,7 @@
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",
     "webpack-dev:tls": "cd ts && export USE_TLS=true && webpack serve --watch --hot --inline --port 8081 --host 127.0.0.1 --output-public-path=https://localhost:8082/build/ --https --cert=../../../misc/localhost.crt --key=../../../misc/localhost.key",
-    "webpack-dev": "cd ts && webpack serve --hot --inline --port 8080 --host 127.0.0.1 --output-public-path=http://127.0.0.1:8080/build/",
+    "webpack-dev": "cd ts && rm -rf build && webpack serve --hot --inline --port 8080 --host 127.0.0.1",
     "start:tls": "concurrently --kill-others \"go run go/exampleserver/exampleserver.go --enable_tls=true\" \"npm run webpack-dev:tls\"",
     "start": "cross-env NODE_ENV=development concurrently --kill-others \"npm run webpack-dev\""
   },

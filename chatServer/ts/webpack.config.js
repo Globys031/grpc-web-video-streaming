@@ -4,14 +4,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackTagsPlugin = require('html-webpack-tags-plugin');
 
-// Tikrinau kad jis undefined by default
+// Given through package.json https://github.com/webpack-contrib/mini-css-extract-plugin#recommended
 const devMode = process.env.NODE_ENV !== "production";
-
-// The following explains when to use which
-// https://github.com/webpack-contrib/mini-css-extract-plugin#recommended
-// const devMode = 'production'
-// const devMode = 'development'
-
 
 module.exports = {
   entry: "./src/index.ts",
@@ -19,7 +13,11 @@ module.exports = {
   // mode: devMode,
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    // publicPath: "http://127.0.0.1:8080/build/"
+    // publicPath: path.resolve(__dirname, 'build'),
+    publicPath: '/', // HtmlWebpackPlugin use the publicPath to prepend the urls of the injects.
+    clean: true,
   },
   // Note that webpack-dev-server runs in-memory so it won't generate any files you should see by definition. 
   // If you want actual files, you should use webpack --watch . 
@@ -27,10 +25,7 @@ module.exports = {
   devServer: { // https://webpack.js.org/configuration/dev-server/
     writeToDisk: true,
     // serveIndex middleware generates directory listings on viewing directories that don't have an index.html file.
-    // serveIndex: false,
-    staticOptions: {
-      redirect: true, // Redirect to trailing “/” when the pathname is a directory
-    },
+    serveIndex: false,
   },
   // https://webpack.js.org/guides/development/
   // In order to make it easier to track down errors and warnings, 
@@ -50,7 +45,6 @@ module.exports = {
         test: /\.css$/,
         use: [
           // For development mode (including webpack-dev-server) you can use style-loader
-          // devMode === "development" ? "style-loader" : MiniCssExtractPlugin.loader,
           devMode ? "style-loader" : MiniCssExtractPlugin.loader,
           'css-loader',
         ]
@@ -61,10 +55,20 @@ module.exports = {
     extensions: [".ts", ".js"]
   },
   plugins: [
+    // https://youtu.be/y_RFOaSDL8I?t=257
+    // use the htmlwebpackplugin to load html files if you know how many html files you'll have 
+    // at the time of configuration. Otherwise use file loader
     new HtmlWebpackPlugin({ // https://github.com/jantimon/html-webpack-plugin
-      template:  '../static/index.html',
+      template: "../static/index.html",
+      filename: "index.html",
+      // chunks specifies what artifacts should be injected into the file (plugin tries to inject bundle.js by default)
     }),
-    new HtmlWebpackTagsPlugin({ tags: ['build.js', 'style.css'], append: true }),
+    new HtmlWebpackPlugin({ // https://github.com/jantimon/html-webpack-plugin
+      template: "../static/test/test.html",
+      filename: "test/test.html",
+      chunks: [],
+    }),
+    new HtmlWebpackTagsPlugin({ append: true, }),
     new MiniCssExtractPlugin({
       filename: 'style.css',
     }),
