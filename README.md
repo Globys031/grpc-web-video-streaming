@@ -67,3 +67,4 @@ Written by referencing the following sources:
 * https://github.com/envoyproxy/envoy/tree/main/examples/grpc-bridge
 * https://www.polarsignals.com/blog/posts/2022/02/22/how-we-build-our-apis-from-scratch/
 * https://medium.com/wesionary-team/grpc-console-chat-application-in-go-dd77a29bb5c3
+* https://levelup.gitconnected.com/microservices-with-go-grpc-api-gateway-and-authentication-part-1-2-393ad9fc9d30

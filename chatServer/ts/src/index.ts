@@ -4,6 +4,7 @@ import * as library from "../protoLibrary/chat_pb";
 import "../../static/style.css";
 
 import { Timestamp } from 'google-protobuf/google/protobuf/timestamp_pb';
+import { client } from "@improbable-eng/grpc-web/dist/typings/client";
 
 declare const USE_TLS: boolean;
 const host = USE_TLS ? "https://127.0.0.1:9091" : "http://127.0.0.1:9090";
