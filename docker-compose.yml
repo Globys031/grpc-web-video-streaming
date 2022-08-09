@@ -1,14 +1,38 @@
-# https://www.composerize.com/
-version: '3.3'
+# version: '3.4'
 services:
-    envoy-dev:
-        container_name: envoy-container
-        volumes:
-            - './envoy.yaml:/etc/envoy/envoy.yaml' # overwrites default container's envoy.yaml file
-        ports:
-            - '8080:8080'
-            # sita uzkomentavus vel grazina senaji teisinga "OK" koda OPTION'ui.
-            # CIuju gaunasi, kad tiesiog nebeproxy'ina normaliai tada serveris ir tiek
-            - '9090:9090'
-            - '8999:8999'
-        image: 'envoyproxy/envoy-dev:2ee5600abd1c64da0c0d0c8b12a9f6f5a3bf98e2'
+  gatewayServer:
+    image: ${DOCKER_REGISTRY-}gatewayServer
+    build:
+      context: .
+      dockerfile: gatewayServer/Dockerfile
+
+  authServer:
+    image: ${DOCKER_REGISTRY-}authServer
+    build:
+      context: .
+      dockerfile: authServer/Dockerfile
+
+
+  streamingServer:
+    image: ${DOCKER_REGISTRY-}streamingServer
+    build:
+      context: .
+      dockerfile: streamingServer/Dockerfile
+
+  chatServer:
+    image: ${DOCKER_REGISTRY-}chatServer
+    build:
+      context: .
+      dockerfile: chatServer/Dockerfile
+
+  commentServer:
+    image: ${DOCKER_REGISTRY-}commentServer
+    build:
+      context: .
+      dockerfile: commentServer/Dockerfile
+
+  sqlServer:
+    image: postgres:15.0
+
+  adminer:
+    image: adminer
