@@ -1,38 +1,43 @@
+# https://docs.docker.com/compose/environment-variables/
+
 # version: '3.4'
+
+
+
 services:
   gatewayServer:
-    image: ${DOCKER_REGISTRY-}gatewayServer
+    image: ${DOCKER_REGISTRY}gatewayServer
     build:
       context: .
       dockerfile: gatewayServer/Dockerfile
 
   authServer:
-    image: ${DOCKER_REGISTRY-}authServer
+    image: ${DOCKER_REGISTRY}authServer
     build:
       context: .
       dockerfile: authServer/Dockerfile
 
 
   streamingServer:
-    image: ${DOCKER_REGISTRY-}streamingServer
+    image: ${DOCKER_REGISTRY}streamingServer
     build:
       context: .
       dockerfile: streamingServer/Dockerfile
 
   chatServer:
-    image: ${DOCKER_REGISTRY-}chatServer
+    image: ${DOCKER_REGISTRY}chatServer
     build:
       context: .
       dockerfile: chatServer/Dockerfile
 
   commentServer:
-    image: ${DOCKER_REGISTRY-}commentServer
+    image: ${DOCKER_REGISTRY}commentServer
     build:
       context: .
       dockerfile: commentServer/Dockerfile
 
   sqlServer:
-    image: postgres:15.0
+    image: postgres:${POSTGRES_VERSION}
 
   adminer:
     image: adminer

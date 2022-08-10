@@ -189,7 +189,7 @@ type Message struct {
 	MessageID  int32                  `protobuf:"varint,2,opt,name=messageID,proto3" json:"messageID,omitempty"`
 	User       *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	Message    string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
-	SendTime   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=sendTime,proto3" json:"sendTime,omitempty"`
+	SendTime   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=sendTime,proto3" json:"sendTime,omitempty"` // https://stackoverflow.com/questions/3574716/date-and-time-type-for-use-with-protobuf
 }
 
 func (x *Message) Reset() {

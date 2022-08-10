@@ -11,14 +11,17 @@
   },
   "license": "none",
   "devDependencies": {
+    "@types/node": "^18.6.5",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",
     "html-webpack-tags-plugin": "^3.0.2",
     "style-loader": "^3.3.1",
-    "ts-loader": "^9.3.1"
+    "ts-loader": "^9.3.1",
+    "ts-protoc-gen": "^0.15.0"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
+    "dotenv": "^16.0.1",
     "mini-css-extract-plugin": "^2.6.1"
   }
 }

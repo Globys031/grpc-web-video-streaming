@@ -1,5 +1,3 @@
-// https://daily.dev/blog/build-a-chat-app-using-grpc-and-reactjs
-
 syntax = "proto3";
 
 package protoLibrary;

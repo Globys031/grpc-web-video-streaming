@@ -9,8 +9,6 @@
     "strictNullChecks": true,
     "stripInternal": true,
     "noFallthroughCasesInSwitch": true,
-    "noEmitOnError": true,
-    "types": ["node"],
-    // "typeRoots": ["../../config/environment.d.ts", "../node_modules/@types"]
+    "noEmitOnError": true
   }
 }

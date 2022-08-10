@@ -10,9 +10,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 
-	library "grpc-web-video-streaming/chatServer/go/protoLibrary"
+	"github.com/Globys031/grpc-web-video-streaming/authServer/go/db"
+	library "github.com/Globys031/grpc-web-video-streaming/authServer/go/protoLibrary"
+	"github.com/Globys031/grpc-web-video-streaming/authServer/go/utils"
 
-	auth "grpc-web-video-streaming/authServer/go/auth"
+	auth "github.com/Globys031/grpc-web-video-streaming/authServer/go/auth"
+	globalConfig "github.com/Globys031/grpc-web-video-streaming/config"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 )
@@ -38,16 +41,39 @@ func allowedOriginCors(origin string) bool {
 }
 
 func main() {
+	config, err := globalConfig.LoadConfig()
+
+	if err != nil {
+		log.Fatalln("Failed at config", err)
+	}
+
+	db_handler := db.Init(config.Database_URL)
+
+	jwt := utils.JwtWrapper{
+		SecretKey:       config.JWTSecretKey,
+		Issuer:          "go-grpc-auth-svc",
+		ExpirationHours: 24 * 365,
+	}
+
+	////////////////////////
+	////////////////////////
+	////////////////////////
+	////////////////////////
+
 	flag.Parse()
 
-	port := 9090
+	port := config.Auth_port
 	if *enableTls {
-		port = 9091
+		port = config.Auth_ssl_port
 	}
 
 	grpcServer := grpc.NewServer()
 
-	library.RegisterAuthServiceServer(grpcServer, &auth.AuthService)
+	library.RegisterAuthServiceServer(grpcServer,
+		&auth.AuthService{
+			H:   db_handler,
+			Jwt: jwt,
+		})
 
 	grpclog.SetLogger(log.New(os.Stdout, "authserver: ", log.LstdFlags))
 
