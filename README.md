@@ -29,7 +29,7 @@ For whatever reason localhost isn't resolving properly when using envoy, so spec
 HTTP2 requires TLS. This repository contains certificates in the `../misc` directory which are used by the server. You can optionally generate your own replacements using the `gen_cert.sh` in the same directory.
 You will need to import the `../misc/localhostCA.pem` certificate authority into your browser, checking the "Trust this CA to identify websites" so that your browser trusts the localhost server.
 
-* `docker compose --env-file ./config/env/prod.env up`
+<!-- * `docker compose --env-file ./config/env/prod.env up` -->
 * `npm run start:tls` to start the Golang server and Webpack dev server with the certificates in `misc`
 * Go to `https://localhost:8081`
 
@@ -60,6 +60,39 @@ cross-env NODE_ENV=development
 ```
 
 Modify `config/env/envType.env` from `ENV=dev` to `ENV=prod` and vice versa
+
+## Docker
+
+### Running a single microservice
+
+`.env` files are used to store all environment variables. They're only used to put values into docker-compose.yml. It has nothing to do with ENV, ARG. It’s exclusively a docker-compose.yml thing. Refer to config/*.env files for arguments when building the image.
+
+First, change into the root directory of this project. The instructions below use `sqlServer` microservice for reference. Replace it as necessary.
+
+The following command will build and run image `sqlserver` in an interactive environment.
+Use the `--rm` argument to remove the container as well as all the data associated (will remove any volumes set in Dockerfile)
+```
+docker build -t sqlserver -f sqlServer/Dockerfile --build-arg POSTGRES_USER=postgres --build-arg POSTGRES_PASSWORD=example --build-arg POSTGRES_VERSION=14.4 --build-arg POSTGRES_PORT=5432 --build-arg POSTGRES_FULL_VERSION=14.4 --build-arg POSTGRES_MAJOR_VERSION=14  sqlServer
+docker run --rm -it -p 5432:5432 --name postgreserver sqlserver
+```
+
+Refer to the following to [use volume from previous container](https://github.com/moby/moby/issues/30647#issuecomment-277048695)
+
+
+##### Accessing postgresql database container
+
+After starting the sqlserver container, run the following in a different terminal:
+```
+docker exec -it postgreserver bash
+su - postgres
+```
+
+##### Remove all previous volumes:
+
+```
+docker volume ls | awk '{print $2}' | xargs docker volume rm
+```
+
 
 ### Common issues
 
@@ -93,3 +126,4 @@ Written by referencing the following sources:
 * https://www.polarsignals.com/blog/posts/2022/02/22/how-we-build-our-apis-from-scratch/
 * https://medium.com/wesionary-team/grpc-console-chat-application-in-go-dd77a29bb5c3
 * https://levelup.gitconnected.com/microservices-with-go-grpc-api-gateway-and-authentication-part-1-2-393ad9fc9d30
+* https://docs.docker.com/engine/reference/builder/
