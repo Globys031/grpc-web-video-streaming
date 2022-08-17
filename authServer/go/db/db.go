@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/Globys031/grpc-web-video-streaming/authServer/go/models"
@@ -12,14 +13,19 @@ type Handler struct {
 	Database *gorm.DB
 }
 
-func Init(url string) Handler {
-	db, err := gorm.Open(postgres.Open(url), &gorm.Config{})
+func Init(hostname string, user string, passwd string, db_name string, port string) Handler {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		hostname, user, passwd, db_name, port)
+
+	fmt.Println(dsn)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// The db.AutoMigrate function will create the table automatically for us as soon as we start this application.
-	// Atkreipt demesi kad darau mounted storage tai gali but kad be reikalo bandysiu keliskart kurt table
+	// Atkreipt demesi kad darau mounted storage
 	db.AutoMigrate(&models.User{})
 
 	return Handler{db}
