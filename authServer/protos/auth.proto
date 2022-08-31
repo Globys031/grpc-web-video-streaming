@@ -10,11 +10,28 @@ service AuthService {
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
 }
 
+message User {
+  int64 userID = 1;
+  string username = 2;
+  
+  string email = 3;
+  string password = 4;
+  // Think it would be better to register one role since
+  // all roles simply add more functionality than the previous
+  string role = 5;
+  // repeated string roles = 5;
+}
+
 // Register
 
 message RegisterRequest {
-  string email = 1;
-  string password = 2;
+  string username = 1;
+  string email = 2;
+  string password = 3;
+
+  // Not yet implemented
+  string role = 4;
+
 }
 
 message RegisterResponse {
@@ -25,7 +42,7 @@ message RegisterResponse {
 // Login
 
 message LoginRequest {
-  string email = 1;
+  string username = 1;
   string password = 2;
 }
 
@@ -44,3 +61,5 @@ message ValidateResponse {
   string error = 2;
   int64 userId = 3;
 }
+
+// TO DO: add logout requests

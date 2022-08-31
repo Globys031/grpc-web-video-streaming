@@ -16,14 +16,14 @@ type JwtWrapper struct {
 
 type jwtClaims struct {
 	jwt.StandardClaims
-	Id    int64
-	Email string
+	Id       int64
+	Username string
 }
 
 func (wrapper *JwtWrapper) GenerateToken(user models.User) (signedToken string, err error) {
 	claims := &jwtClaims{
-		Id:    user.Id,
-		Email: user.Email,
+		Id:       user.Id,
+		Username: user.Username,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(wrapper.ExpirationHours)).Unix(),
 			Issuer:    wrapper.Issuer,

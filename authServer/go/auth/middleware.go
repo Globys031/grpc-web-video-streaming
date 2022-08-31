@@ -2,9 +2,11 @@ package auth
 
 import (
 	"net/http"
-	"strings"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 
 	library "github.com/Globys031/grpc-web-video-streaming/authServer/go/protoLibrary"
 )
@@ -13,38 +15,32 @@ import (
 // That means, on some routes, we only allow logged-in users to address our protected microservices.
 
 type AuthMiddlewareConfig struct {
-	svc *ServiceClient
+	s *AuthService
 }
 
-func InitAuthMiddleware(svc *ServiceClient) AuthMiddlewareConfig {
-	return AuthMiddlewareConfig{svc}
+func InitAuthMiddleware(s *AuthService) AuthMiddlewareConfig {
+	return AuthMiddlewareConfig{s}
 }
 
-func (c *AuthMiddlewareConfig) AuthRequired(ctx context.Context) {
-	authorization := ctx.Request.Header.Get("authorization")
+// !!!!! unfinished function, nepagaunu kaip context ir handleriai cia veikia
+func (config *AuthMiddlewareConfig) AuthRequired(ctx context.Context) error {
+	md, _ := metadata.FromIncomingContext(ctx)
+	authorization := md.Get("authorization")
 
-	if authorization == "" {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
+	if authorization[0] == "" || authorization[1] == "" {
+		return grpc.Errorf(codes.Unauthenticated, "Authorization header is missing or there's no bearer")
 	}
 
-	token := strings.Split(authorization, "Bearer ")
-
-	if len(token) < 2 {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	res, err := c.svc.Client.Validate(context.Background(), &library.ValidateRequest{
-		Token: token[1],
+	res, err := config.s.Validate(context.Background(), &library.ValidateRequest{
+		Token: authorization[1],
 	})
 
 	if err != nil || res.Status != http.StatusOK {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
+		return grpc.Errorf(codes.Internal, "Server returned token was invalid")
 	}
+	return nil
 
-	ctx.Set("userId", res.UserId)
+	// ctx.Set("userId", res.UserId)
 
-	ctx.Next()
+	// ctx.Next()
 }

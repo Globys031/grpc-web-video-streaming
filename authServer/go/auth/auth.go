@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/Globys031/grpc-web-video-streaming/authServer/go/db"
@@ -9,31 +10,70 @@ import (
 
 	library "github.com/Globys031/grpc-web-video-streaming/authServer/go/protoLibrary"
 	"github.com/Globys031/grpc-web-video-streaming/authServer/go/utils"
+	"github.com/go-playground/validator"
 )
 
-// TO DO:
-// Add grpc errors every where the code is checking for errors. For example:
-// grpc.Errorf(codes.FailedPrecondition, "Couldn't find any users in the chatroom")
+// Return http status codes instead of grpc ones. This way additional conversion
+// from grpc to htpp codes on the frontend side can be avoided
 
 type AuthService struct {
+	library.UnimplementedAuthServiceServer
+
 	Handler db.Handler
 	Jwt     utils.JwtWrapper
 }
 
+// use a single instance of Validate, it caches struct info (used for user struct validation)
+var validate *validator.Validate
+
 func (s *AuthService) Register(ctx context.Context, req *library.RegisterRequest) (*library.RegisterResponse, error) {
 	var user models.User
 
-	if result := s.Handler.Database.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
+	// Sql check if user with that email already exists and if there's no error from the server
+	// Will return nil if there isn't
+	resultEmail := s.Handler.Database.Where(&models.User{Email: req.Email}).First(&user)
+	resultUsername := s.Handler.Database.Where(&models.User{Username: req.Username}).First(&user)
+
+	if resultEmail.Error == nil && resultUsername.Error == nil {
+		return &library.RegisterResponse{
+			Status: http.StatusConflict,
+			Error:  "Username and E-mail already exists",
+		}, nil
+	} else if resultEmail.Error == nil {
 		return &library.RegisterResponse{
 			Status: http.StatusConflict,
 			Error:  "E-Mail already exists",
 		}, nil
+	} else if resultUsername.Error == nil {
+		return &library.RegisterResponse{
+			Status: http.StatusConflict,
+			Error:  "Username already exists",
+		}, nil
 	}
 
+	user.Username = req.Username
 	user.Email = req.Email
+	// Password hashes right after validation. Otherwise, wouldn't be able
+	// to properly check what length the string is
+	user.Password = req.Password
+	user.Role = req.Role
+
+	if err := s.validateUser(user); err != nil {
+		return &library.RegisterResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "User data validation didn't succeed on the server side",
+		}, err
+	}
 	user.Password = utils.HashPassword(req.Password)
 
-	s.Handler.Database.Create(&user)
+	var result = s.Handler.Database.Create(&user)
+	if result.Error != nil {
+		// Possible situation where postgre server was initially up, but later crashed
+		return &library.RegisterResponse{
+			Status: http.StatusServiceUnavailable,
+			Error:  "Sql server is down or it couldn't process user creation",
+		}, result.Error
+	}
 
 	return &library.RegisterResponse{
 		Status: http.StatusCreated,
@@ -43,7 +83,7 @@ func (s *AuthService) Register(ctx context.Context, req *library.RegisterRequest
 func (s *AuthService) Login(ctx context.Context, req *library.LoginRequest) (*library.LoginResponse, error) {
 	var user models.User
 
-	if result := s.Handler.Database.Where(&models.User{Email: req.Email}).First(&user); result.Error != nil {
+	if result := s.Handler.Database.Where(&models.User{Username: req.Username}).First(&user); result.Error != nil {
 		return &library.LoginResponse{
 			Status: http.StatusNotFound,
 			Error:  "User not found",
@@ -55,11 +95,12 @@ func (s *AuthService) Login(ctx context.Context, req *library.LoginRequest) (*li
 	if !match {
 		return &library.LoginResponse{
 			Status: http.StatusNotFound,
-			Error:  "User not found",
+			Error:  "Incorrect password for this username",
 		}, nil
 	}
 
 	token, _ := s.Jwt.GenerateToken(user)
+	fmt.Println(token)
 
 	return &library.LoginResponse{
 		Status: http.StatusOK,
@@ -67,6 +108,7 @@ func (s *AuthService) Login(ctx context.Context, req *library.LoginRequest) (*li
 	}, nil
 }
 
+// Used for validating that a user is logged in (not yet fully implemented)
 func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest) (*library.ValidateResponse, error) {
 	claims, err := s.Jwt.ValidateToken(req.Token)
 
@@ -79,7 +121,7 @@ func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest
 
 	var user models.User
 
-	if result := s.Handler.Database.Where(&models.User{Email: claims.Email}).First(&user); result.Error != nil {
+	if result := s.Handler.Database.Where(&models.User{Username: claims.Username}).First(&user); result.Error != nil {
 		return &library.ValidateResponse{
 			Status: http.StatusNotFound,
 			Error:  "User not found",
@@ -90,4 +132,31 @@ func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest
 		Status: http.StatusOK,
 		UserId: user.Id,
 	}, nil
+}
+
+////////////////////////
+// Helper functions ////
+////////////////////////
+// I'll keep them inaccessible from other modules
+
+func (s *AuthService) validateUser(user models.User) error {
+	validate := validator.New()
+	validate.RegisterValidation("role", validateRole)
+
+	err := validate.Struct(&user)
+	if err != nil {
+		// this check is only needed when your code could produce
+		// an invalid value for validation such as interface with nil
+		// value most including myself do not usually have code like this.
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			fmt.Println(err)
+		}
+	}
+	return err
+}
+
+// Confirm that role is set to one of the three
+func validateRole(fl validator.FieldLevel) bool {
+	roleName := fl.Field().String()
+	return roleName == "USER" || roleName == "MOD" || roleName == "ADMIN"
 }
