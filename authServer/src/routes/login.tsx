@@ -84,6 +84,11 @@ export default class Login extends Component<Props, State> {
     if (successState === true) {
       setTimeout(() => {
         this.setState({redirect: true});
+
+        // // Reload window so that app.tsx can get updated user info.
+        // // User info is set in app.tsx constructor:
+        // // https://reactjs.org/docs/react-component.html#the-component-lifecycle
+        // window.location.reload();
       }, 2000);
     }
   }

@@ -102,13 +102,19 @@ func (s *AuthService) Login(ctx context.Context, req *library.LoginRequest) (*li
 	token, _ := s.Jwt.GenerateToken(user)
 	fmt.Println(token)
 
+	// Regular model is necessary for fetching user data from database
+	// and library user struct is needed for loginResponse
+	libUser := convertToLibraryUser(&user)
 	return &library.LoginResponse{
-		Status: http.StatusOK,
-		Token:  token,
+		Status:      http.StatusOK,
+		Token:       token,
+		UserDetails: libUser,
 	}, nil
 }
 
-// Used for validating that a user is logged in (not yet fully implemented)
+// User role isn't saved in the token and instead has to validate
+// with the server, every time it tries to get access to restricted resource
+// This is to avoid cases where a token was issued accidentally or hijacked
 func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest) (*library.ValidateResponse, error) {
 	claims, err := s.Jwt.ValidateToken(req.Token)
 
@@ -120,13 +126,23 @@ func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest
 	}
 
 	var user models.User
+	accessRole := &req.Role
 
-	if result := s.Handler.Database.Where(&models.User{Username: claims.Username}).First(&user); result.Error != nil {
+	// Validate based on whether that name in token
+	// and access role in validateRequest matches an entry in database
+	if result := s.Handler.Database.Where(&models.User{Username: claims.Username, Role: *accessRole}).First(&user); result.Error != nil {
 		return &library.ValidateResponse{
 			Status: http.StatusNotFound,
 			Error:  "User not found",
 		}, nil
 	}
+
+	// if result := s.Handler.Database.Where(&models.User{Username: claims.Username}).First(&user); result.Error != nil {
+	// 	return &library.ValidateResponse{
+	// 		Status: http.StatusNotFound,
+	// 		Error:  "User not found",
+	// 	}, nil
+	// }
 
 	return &library.ValidateResponse{
 		Status: http.StatusOK,
@@ -139,6 +155,7 @@ func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest
 ////////////////////////
 // I'll keep them inaccessible from other modules
 
+// Meant to validate that the data provided by frontend is of correct format
 func (s *AuthService) validateUser(user models.User) error {
 	validate := validator.New()
 	validate.RegisterValidation("role", validateRole)
@@ -159,4 +176,15 @@ func (s *AuthService) validateUser(user models.User) error {
 func validateRole(fl validator.FieldLevel) bool {
 	roleName := fl.Field().String()
 	return roleName == "USER" || roleName == "MOD" || roleName == "ADMIN"
+}
+
+func convertToLibraryUser(user *models.User) *library.User {
+	libUser := new(library.User)
+	libUser.UserID = user.Id
+	libUser.Username = user.Username
+	libUser.Password = user.Password
+	libUser.Email = user.Email
+	libUser.Role = user.Role
+
+	return libUser
 }

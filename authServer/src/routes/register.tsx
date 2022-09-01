@@ -3,12 +3,13 @@ import { Navigate } from "react-router-dom";
 import * as Yup from "yup";
 
 import Authentication from "../auth/grpcMethods";
+import Storage from "../common/storage";
 
 // import { Formik, Field, Form, ErrorMessage } from "formik";
 // import { FloatingLabel, Dropdown, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 
 import { Form, Formik, ErrorMessage, Field } from "formik";
-import { FormGroup, FloatingLabel, Dropdown} from 'react-bootstrap'
+import { FormGroup, FloatingLabel} from 'react-bootstrap'
 
 
 type Props = {};
@@ -45,9 +46,11 @@ export default class Register extends Component<Props, State> {
 
   // Only show user role selection buttons if logged in user is an admin
   componentDidMount() {
-    const currentUser = Authentication.getCurrentUser();
+    const currentUser = Storage.getCurrentUserInfo();
+
+    // Cia dar sugrizt, dabar turetu teisingai json pars'int
     if (currentUser) {
-      if (currentUser.role === "ADMIN") {
+      if (currentUser.getRole() === "ADMIN") {
         this.setState({ notAdmin: false });
       }
     }
@@ -213,18 +216,7 @@ export default class Register extends Component<Props, State> {
                   component="div"
                   className="alert alert-danger"
                 />
-              <br></br>
-                {/* <Dropdown hidden={notAdmin}>
-                  <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                    Dropdown Button
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu>
-                    <Dropdown.Item href="#/action-1">Regular user</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">moderator</Dropdown.Item>
-                    <Dropdown.Item href="#/action-3">administrator</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown> */}
+              <br hidden={notAdmin}></br>
 
                 <div className="form-group">
                   <button type="submit" className="btn btn-primary btn-block" disabled={loading}>

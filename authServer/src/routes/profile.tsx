@@ -1,35 +1,43 @@
-import React from "react";
 import { Component } from "react";
 import { Navigate } from "react-router-dom";
-import Authentication from "../auth/grpcMethods";
-import IUser from "../types/user";
+
+import {userContext} from '../common/userContext';
+
+// import User from "../protoLibrary/auth_pb";
 
 type Props = {};
 
 type State = {
   redirect: string | null,
   userReady: boolean,
-  currentUser: IUser & { accessToken: string }
 }
 export default class Profile extends Component<Props, State> {
+  static contextType = userContext;
+  declare context: React.ContextType<typeof userContext>
+
   constructor(props: Props) {
     super(props);
 
     this.state = {
       redirect: null,
       userReady: false,
-      currentUser: { accessToken: "" }
     };
   }
 
   // Redirect to /home in case not logged in.
   componentDidMount() {
-    const currentUser = Authentication.getCurrentUser();
-    console.log("\n\nuser: ", currentUser)
+
+    // Assign a contextType to read the current theme context.
+    // React will find the closest theme Provider above and use its value.
+    // In this example, the current theme is "dark".
+    const user = this.context
 
     // If user is not logged in, redirect him to /home
-    if (!currentUser) this.setState({ redirect: "/home" });
-    this.setState({ currentUser: currentUser, userReady: true })
+    if (!user) {
+      this.setState({ redirect: "/home" });
+      return
+    }
+    this.setState({ userReady: true })
   }
 
   render() {
@@ -37,35 +45,26 @@ export default class Profile extends Component<Props, State> {
       return <Navigate to={this.state.redirect} />
     }
 
-    const { currentUser } = this.state;
-
     return (
       <div className="container">
         {(this.state.userReady) ?
           <div>
             <header className="jumbotron">
               <h3>
-                <strong>{currentUser.username}</strong> Profile
+                <strong>{this.context?.getUsername()}</strong> Profile
               </h3>
             </header>
             <p>
-              {/* Remove later. Leave for testing purposes for now */}
-              <strong>Token:</strong>{" "}
-              {currentUser.accessToken.substring(0, 20)} ...{" "}
-              {currentUser.accessToken.substr(currentUser.accessToken.length - 20)}
-            </p>
-            <p>
               <strong>Id:</strong>{" "}
-              {currentUser.userID}
+              {this.context?.getUserid()}
             </p>
             <p>
               <strong>Email:</strong>{" "}
-              {currentUser.email}
+              {this.context?.getEmail()}
             </p>
-            <strong>Authorities:</strong>
             <p>
               <strong>Role:</strong>{" "}
-              {currentUser.role}
+              {this.context?.getRole()}
             </p>
           </div> : null}
       </div>

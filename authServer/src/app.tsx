@@ -10,36 +10,27 @@
 // The entrypoint is index.tsx, but this is where
 // all of the app logic resides.
 
-// The navbar dynamically changes by login status and current User’s roles:
-// * Home: always
-// * Login & Sign Up: if user hasn’t signed in yet
-// * User: AuthService.getCurrentUser() returns a value
-// * Board Moderator: roles includes ROLE_MODERATOR
-// * Board Admin: roles includes ROLE_ADMIN
-
 import {Component} from "react";
 import { Routes, Route, Link } from "react-router-dom";
 
 // https://react-bootstrap.github.io/getting-started/introduction#stylesheets
 import "bootstrap/dist/css/bootstrap.min.css";
-// import { Button, Dropdown } from 'react-bootstrap';
-// import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { Dropdown } from 'react-bootstrap';
 import "./app.css";
 
-import AuthService from "./auth/grpcMethods";
-import IUser from './types/user';
+import Authentication from "./auth/grpcMethods";
+
+import User from "./protoLibrary/auth_pb";
 
 import Login from "./routes/login";
 import Register from "./routes/register";
 import Profile from "./routes/profile";
-
+import PageNotFound from "./routes/404";
 import Home from "./routes/home";
 
-import BoardUser from "./roles/user";
-import BoardModerator from "./roles/moderator";
-import BoardAdmin from "./roles/admin";
-
 import EventBus from "./common/eventBus";
+import Storage from "./common/storage";
+import {userContext} from './common/userContext';
 
 // // // // for environment variables
 // // import path from "path";
@@ -52,9 +43,9 @@ import EventBus from "./common/eventBus";
 type Props = {};
 
 type State = {
-  showModeratorBoard: boolean,
-  showAdminBoard: boolean,
-  currentUser: IUser | undefined,
+  user: User.User | null,
+  isMod: boolean,
+  isAdmin: boolean,
   hasError: boolean,
 }
 
@@ -63,29 +54,31 @@ class App extends Component<Props, State> {
     super(props);
     this.logOut = this.logOut.bind(this);
 
-    this.state = {
-      showModeratorBoard: false,
-      showAdminBoard: false,
-      currentUser: undefined,
-      hasError: false,
-    };
+    // Sets user info in constructor for when page gets reloaded after login
+    const currentUser = Storage.getCurrentUserInfo();
+    if (currentUser) {
+      // Should not use setState in the constructor since the component is not mounted yet
+      // Instead, initialize the state directly
+      this.state = {
+        user: currentUser,
+        isMod: currentUser.getRole() === "MOD",
+        isAdmin: currentUser.getRole() === "ADMIN",
+        hasError: false,
+      }
+    } else {
+      this.state = {
+        user: currentUser,
+        isMod: false,
+        isAdmin: false,
+        hasError: false,
+      };
+    }
   }
 
   // https://reactjs.org/docs/react-component.html#componentdidmount
   // componentDidMount() is invoked immediately after
   // a component is mounted (inserted into the tree).
-  //
-  // If user is connected, get all of its login details
   componentDidMount() {
-    const user = AuthService.getCurrentUser();
-
-    if (user) {
-      this.setState({
-        currentUser: user,
-        showModeratorBoard: user.role === "MODERATOR",
-        showAdminBoard: user.role === "ADMIN",
-      });
-    }
     // Setup an event listener for the "logout" event.
     EventBus.on("logout", this.logOut);
   }
@@ -94,33 +87,35 @@ class App extends Component<Props, State> {
     EventBus.remove("logout", this.logOut);
 
     // patikrinau kad sitas panaikins localstorage jeigu
-    // isjungsi sena tab'a. Kas nera gerai. Noriu kad istrintu isjungus is serverio puses programa
+    // isjungsi sena tab'a.
     localStorage.clear();
   }
 
-  // For error handling
+  // For error handling https://reactjs.org/docs/error-boundaries.html
   static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  logOut() {
-    AuthService.logout();
+  async logOut() {
+    await Authentication.logout();
     this.setState({
-      showModeratorBoard: false,
-      showAdminBoard: false,
-      currentUser: undefined,
+      isMod: false,
+      isAdmin: false,
+      user: null,
     });
   }
 
   render() {
-    const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
+    const { user, isAdmin } = this.state;
     if (this.state.hasError) {
       return <div>Couldn't load app UI</div>;
     }
+
     return (
       <div>
-        
+        <div>
+        </div>
         <nav className="navbar navbar-expand navbar-dark bg-dark">
           <Link to={"/"} className="navbar-brand">
             root
@@ -131,39 +126,33 @@ class App extends Component<Props, State> {
                 Home
               </Link>
             </li>
-
-            {showModeratorBoard && (
-              <li className="nav-item">
-                <Link to={"/mod"} className="nav-link">
-                  Moderator Board
-                </Link>
-              </li>
-            )}
-
-            {showAdminBoard && (
-              <li className="nav-item">
-                <Link to={"/admin"} className="nav-link">
-                  Admin Board
-                </Link>
-              </li>
-            )}
-
-            {currentUser && (
-              <li className="nav-item">
-                <Link to={"/user"} className="nav-link">
-                  User
-                </Link>
-              </li>
-            )}
+  
           </div>
 
-          {currentUser ? (
+          {/* Also show "sign up" if current user is an admin */}
+          {user ? (
             <div className="navbar-nav ml-auto">
               <li className="nav-item">
-                <Link to={"/profile"} className="nav-link">
-                  {currentUser.username}
+                <Dropdown>
+                  <Dropdown.Toggle variant="secondary" id="dropdown-basic">
+                    Welcome, {user.getUsername()}
+                  </Dropdown.Toggle>
+
+                  <Dropdown.Menu>
+                    <Dropdown.Item href="/profile">Profile</Dropdown.Item>
+                    <Dropdown.Item href="/settings">Settings (not yet implemented)</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </li>
+
+              {isAdmin && (
+              <li className="nav-item">
+                <Link to={"/register"} className="nav-link">
+                  Sign Up
                 </Link>
               </li>
+              )}
+
               <li className="nav-item">
                 <a href="/login" className="nav-link" onClick={this.logOut}>
                   Logout
@@ -187,22 +176,36 @@ class App extends Component<Props, State> {
           )}
         </nav>
 
+        {/* Depending on whether user is logged in or not,
+        it will get a 404 page when trying to access certain resources that
+        would otherwise be available */}
         <div className="container mt-3">
           {/* https://reactrouter.com/docs/en/v6/components/routes */}
-          <Routes>
-            {/* https://reactrouter.com/docs/en/v6/upgrading/v5
-            all paths match exactly by default. If you want to match more of 
-            the URL because you have child routes use 
-            a trailing * as in <Route path="users/*">. */}
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/user/*" element={<BoardUser />} />
-            <Route path="/mod/*" element={<BoardModerator />} />
-            <Route path="/admin/*" element={<BoardAdmin />} />
-          </Routes>
+          {user ? (
+            <Routes>
+              {/* https://reactrouter.com/docs/en/v6/upgrading/v5
+              If you want to match more of the URL because you have child routes use 
+              a trailing * as in <Route path="users/*">. */}
+              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
+              {/* if logged in, only show registration page for admin user */}
+              {isAdmin && (
+                <Route path="/register" element={<Register />} />
+              )}
+              <userContext.Provider value={this.state.user}>
+                <Route path="/profile" element={<Profile />} />
+              </userContext.Provider>
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          ) : (
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          )}
         </div>
 
         { /*<AuthVerify logOut={this.logOut}/> */}

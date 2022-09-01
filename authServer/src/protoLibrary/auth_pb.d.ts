@@ -120,6 +120,11 @@ export class LoginResponse extends jspb.Message {
   getToken(): string;
   setToken(value: string): LoginResponse;
 
+  getUserdetails(): User | undefined;
+  setUserdetails(value?: User): LoginResponse;
+  hasUserdetails(): boolean;
+  clearUserdetails(): LoginResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): LoginResponse.AsObject;
   static toObject(includeInstance: boolean, msg: LoginResponse): LoginResponse.AsObject;
@@ -133,12 +138,16 @@ export namespace LoginResponse {
     status: number,
     error: string,
     token: string,
+    userdetails?: User.AsObject,
   }
 }
 
 export class ValidateRequest extends jspb.Message {
   getToken(): string;
   setToken(value: string): ValidateRequest;
+
+  getRole(): string;
+  setRole(value: string): ValidateRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ValidateRequest.AsObject;
@@ -151,6 +160,7 @@ export class ValidateRequest extends jspb.Message {
 export namespace ValidateRequest {
   export type AsObject = {
     token: string,
+    role: string,
   }
 }
 

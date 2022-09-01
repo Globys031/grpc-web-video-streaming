@@ -8,6 +8,8 @@ service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+
+  // rpc GetUserInfo(UserInfoRequest) returns (User) {}
 }
 
 message User {
@@ -16,11 +18,12 @@ message User {
   
   string email = 3;
   string password = 4;
-  // Think it would be better to register one role since
-  // all roles simply add more functionality than the previous
   string role = 5;
-  // repeated string roles = 5;
 }
+
+// message UserInfoRequest { 
+//   string token = 1;
+// }
 
 // Register
 
@@ -50,11 +53,15 @@ message LoginResponse {
   int64 status = 1;
   string error = 2;
   string token = 3;
+  User userDetails = 4;
 }
 
 // Validate
 
-message ValidateRequest { string token = 1; }
+message ValidateRequest { 
+  string token = 1;
+  string role = 2; // different resources are returned depending on access level
+}
 
 message ValidateResponse {
   int64 status = 1;
@@ -62,4 +69,5 @@ message ValidateResponse {
   int64 userId = 3;
 }
 
-// TO DO: add logout requests
+// TO DO: add logout requests (is frontend'o jau sutvarko, bet klausimas kada backend'as
+// panaikina session key).

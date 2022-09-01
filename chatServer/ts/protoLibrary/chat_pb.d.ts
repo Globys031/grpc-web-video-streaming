@@ -34,8 +34,8 @@ export class User extends jspb.Message {
   getUserid(): number;
   setUserid(value: number): void;
 
-  getName(): string;
-  setName(value: string): void;
+  getUsername(): string;
+  setUsername(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): User.AsObject;
@@ -50,7 +50,7 @@ export class User extends jspb.Message {
 export namespace User {
   export type AsObject = {
     userid: number,
-    name: string,
+    username: string,
   }
 }
 

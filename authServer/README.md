@@ -74,6 +74,7 @@ launch.json:
 - https://formik.org/docs/guides/validation
 - https://github.com/jquense/yup
 - https://medium.com/@apzuk3/input-validation-in-golang-bc24cdec1835
+- https://www.digitalocean.com/community/tutorials/react-manage-user-login-react-context
 
 react-bootstrap is just bootstrap made into react components
 - https://getbootstrap.com/

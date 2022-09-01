@@ -1,6 +1,6 @@
 {
   "name": "grpc-web-video-streaming",
-  "version": "0.15.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "generate_cert": "cd ../misc ./gen_cert.sh",

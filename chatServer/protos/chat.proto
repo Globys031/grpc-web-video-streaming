@@ -24,7 +24,12 @@ message Chatroom {
 
 message User {
   int32 userID = 1;
-  string name = 2;
+  string username = 2;
+  
+  // add later
+  // string email =;
+  // string password =;
+  // roles?: Array<string>
 }
 
 message UserArray {

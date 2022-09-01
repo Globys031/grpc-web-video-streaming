@@ -11,16 +11,27 @@ declare global {
       Gateway_frontend_ssl_port: string;
       Gateway_backend_port: string;
       Gateway_backend_ssl_port: string;
-      Auth_port: string;
-      Auth_ssl_port: string;
-      Streaming_port: string;
-      Streaming_ssl_port: string;
-      Chat_port: string;
-      Chat_ssl_port: string;
-      Comment_port: string;
-      Comment_ssl_port: string;
+      Auth_frontend_port: string;
+      Auth_frontend_ssl_port: string;
+      Auth_backend_port: string;
+      Auth_backend_ssl_port: string;
+      Streaming_frontend_port: string;
+      Streaming_frontend_ssl_port: string;
+      Streaming_backend_port: string;
+      Streaming_backend_ssl_port: string;
+      Chat_frontend_port: string;
+      Chat_frontend_ssl_port: string;
+      Chat_backend_port: string;
+      Chat_backend_ssl_port: string;
+      Comment_frontend_port: string;
+      Comment_frontend_ssl_port: string;
+      Comment_backend_port: string;
+      Comment_backend_ssl_port: string;
       Postgre_port: string;
       Adminer_port: string;
+
+      // remove later
+      REACT_APP_NOT_SECRET_CODE: string;
     }
   }
 }

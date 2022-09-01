@@ -993,7 +993,8 @@ proto.protoLibrary.LoginResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     status: jspb.Message.getFieldWithDefault(msg, 1, 0),
     error: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    token: jspb.Message.getFieldWithDefault(msg, 3, "")
+    token: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    userdetails: (f = msg.getUserdetails()) && proto.protoLibrary.User.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1041,6 +1042,11 @@ proto.protoLibrary.LoginResponse.deserializeBinaryFromReader = function(msg, rea
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setToken(value);
+      break;
+    case 4:
+      var value = new proto.protoLibrary.User;
+      reader.readMessage(value,proto.protoLibrary.User.deserializeBinaryFromReader);
+      msg.setUserdetails(value);
       break;
     default:
       reader.skipField();
@@ -1090,6 +1096,14 @@ proto.protoLibrary.LoginResponse.serializeBinaryToWriter = function(message, wri
     writer.writeString(
       3,
       f
+    );
+  }
+  f = message.getUserdetails();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.protoLibrary.User.serializeBinaryToWriter
     );
   }
 };
@@ -1149,6 +1163,43 @@ proto.protoLibrary.LoginResponse.prototype.setToken = function(value) {
 };
 
 
+/**
+ * optional User userDetails = 4;
+ * @return {?proto.protoLibrary.User}
+ */
+proto.protoLibrary.LoginResponse.prototype.getUserdetails = function() {
+  return /** @type{?proto.protoLibrary.User} */ (
+    jspb.Message.getWrapperField(this, proto.protoLibrary.User, 4));
+};
+
+
+/**
+ * @param {?proto.protoLibrary.User|undefined} value
+ * @return {!proto.protoLibrary.LoginResponse} returns this
+*/
+proto.protoLibrary.LoginResponse.prototype.setUserdetails = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.protoLibrary.LoginResponse} returns this
+ */
+proto.protoLibrary.LoginResponse.prototype.clearUserdetails = function() {
+  return this.setUserdetails(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.protoLibrary.LoginResponse.prototype.hasUserdetails = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
 
 
 
@@ -1181,7 +1232,8 @@ proto.protoLibrary.ValidateRequest.prototype.toObject = function(opt_includeInst
  */
 proto.protoLibrary.ValidateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    token: jspb.Message.getFieldWithDefault(msg, 1, "")
+    token: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    role: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1222,6 +1274,10 @@ proto.protoLibrary.ValidateRequest.deserializeBinaryFromReader = function(msg, r
       var value = /** @type {string} */ (reader.readString());
       msg.setToken(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRole(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1258,6 +1314,13 @@ proto.protoLibrary.ValidateRequest.serializeBinaryToWriter = function(message, w
       f
     );
   }
+  f = message.getRole();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1276,6 +1339,24 @@ proto.protoLibrary.ValidateRequest.prototype.getToken = function() {
  */
 proto.protoLibrary.ValidateRequest.prototype.setToken = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string role = 2;
+ * @return {string}
+ */
+proto.protoLibrary.ValidateRequest.prototype.getRole = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.protoLibrary.ValidateRequest} returns this
+ */
+proto.protoLibrary.ValidateRequest.prototype.setRole = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
