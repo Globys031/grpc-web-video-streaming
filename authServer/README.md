@@ -10,15 +10,7 @@ cd grpc-web-video-streaming/authServer
 npm start
 ```
 
-## More details about this microservice
-
-By default when starting the authentication backend server, it will create 3 users for each of the roles with the same username and password:
-- user
-- admin
-- mod
-
-
-### How this microservice works
+## How this microservice works
 
 The entrypoint is index.tsx, but app.tsx is where almost all of the frontend logic resides.
 
@@ -26,8 +18,8 @@ The entrypoint is index.tsx, but app.tsx is where almost all of the frontend log
 
 There's 3 roles:
 - regular user (USER)
-- moderator (MOD) - has the ability to delete comments
-- administrator (ADMIN) - has moderator's privileges. On top of that, can create other mods/admins and can upload videos.
+- moderator (MOD) - will later have the ability to delete comments in other microservices
+- administrator (ADMIN) - has moderator's privileges. On top of that, can create other mods/admins. WIll later be able to upload videos in other microservices.
 
 The text in parentheses is how these roles are defined by the server.
 
@@ -40,7 +32,7 @@ The registration window has input control and will redirect user 2 seconds to lo
 
 The backend side additionally validates whether input conforms to restrictions set on the frontend side.
 
-### environment variables
+### Environment variables
 
 According to [this source](https://trekinbami.medium.com/using-environment-variables-in-react-6b0a99d83cf5) it’s common practice to use the original .env file for your production build.
 React-scripts will use either .env or .env.development depending on which start script was used.
@@ -84,13 +76,13 @@ See [component lifecycle](https://reactjs.org/docs/react-component.html#the-comp
 
 ### Babel
 
-Folders `scripts` and `config` were generated automatically after `npm run eject`
-- https://lightrun.com/answers/facebook-create-react-app-typescript-declare-field-causes-transpile-to-fail
+Folders `scripts` and `config` were generated automatically after `npm run eject`.
 
 This was necessary for global userContext. It would otherwise throw an error due to the following line:
 ```tsx
 declare context: React.ContextType<typeof userContext>
 ```
+Used the [following solution](https://lightrun.com/answers/facebook-create-react-app-typescript-declare-field-causes-transpile-to-fail) to circumvent the error.
 
 ### Using postgresql container database
 
