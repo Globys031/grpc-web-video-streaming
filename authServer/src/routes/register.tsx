@@ -5,16 +5,11 @@ import * as Yup from "yup";
 import Authentication from "../auth/grpcMethods";
 import Storage from "../common/storage";
 
-// import { Formik, Field, Form, ErrorMessage } from "formik";
-// import { FloatingLabel, Dropdown, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
-
 import { Form, Formik, ErrorMessage, Field } from "formik";
 import { FormGroup, FloatingLabel} from 'react-bootstrap'
 
 
 type Props = {};
-// const roles : string[] = ["USER", "MOD", "ADMIN"];
-// const roles { regularUser = "USER", moderator = "MOD", administrator = "ADMIN"};
 
 type State = {
   username: string,
@@ -97,7 +92,6 @@ export default class Register extends Component<Props, State> {
 
   // Register user and output timer that shows when the user will be redirected
   async handleRegister(formValue: { username: string; email: string; password: string; role: string }) {
-    console.log("\n\n\nidomu ar ieina i cia\n\n\n")
     const { username, email, password, role } = formValue;
 
     let successState = false;
@@ -108,7 +102,9 @@ export default class Register extends Component<Props, State> {
       loading: true,
     });
 
+    console.log("ieina")
     let [responseStatus, responseMsg] = await Authentication.register(username, email, password, role)
+    console.log("ciuju neiseina")
 
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses
     // If registration was successful, treat the user as logged in
@@ -192,7 +188,7 @@ export default class Register extends Component<Props, State> {
               <FormGroup>
                 <FloatingLabel controlId="floatingPassword" label="Password">
                   {/* A placeholder is required on each <Form.Control> */}
-                  <Field name="password" type="text" className="form-control" placeholder="examplepassword" />
+                  <Field name="password" type="password" className="form-control" placeholder="examplepassword" />
                 </FloatingLabel>
                 <ErrorMessage
                   name="password"
@@ -201,7 +197,6 @@ export default class Register extends Component<Props, State> {
                 />
               </FormGroup>
               <br></br>
-
 
               {/* Bootstrap react components interfere with formik*/}
               {/* <Field component={FormSelect} name="role"> */}

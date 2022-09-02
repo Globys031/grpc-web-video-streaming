@@ -3,18 +3,6 @@ import User from "../protoLibrary/auth_pb";
 // helper functions for local browser storage
 
 class Storage  {
-  // getLocalStorageItem(item : string) {
-  //   const itemStr = localStorage.getItem(item);
-  //   console.log("\n\n\itemStr: ", itemStr)
-
-  //   // If userStr isn't empty or null
-  //   if (itemStr) {
-  //     return JSON.parse(itemStr)
-  //     // return itemStr;
-  //   }
-  //   return null;
-  // }
-
   getCurrentUserInfo() : User.User | null {
     const userStr = localStorage.getItem("user");
 

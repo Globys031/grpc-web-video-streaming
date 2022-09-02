@@ -128,6 +128,8 @@ func (s *AuthService) Validate(ctx context.Context, req *library.ValidateRequest
 	var user models.User
 	accessRole := &req.Role
 
+// Haven't tested yet!
+
 	// Validate based on whether that name in token
 	// and access role in validateRequest matches an entry in database
 	if result := s.Handler.Database.Where(&models.User{Username: claims.Username, Role: *accessRole}).First(&user); result.Error != nil {

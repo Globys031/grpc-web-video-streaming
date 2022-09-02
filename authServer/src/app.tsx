@@ -2,14 +2,6 @@
 // here is also a built-in environment variable called NODE_ENV that's used
 // to find whether the app is in production or development mode
 
-// https://trekinbami.medium.com/using-environment-variables-in-react-6b0a99d83cf5
-// It’s common practice to use the original .env file for your production build
-// React-scripts will use either .env or .env.development depending on which start script was used
-
-
-// The entrypoint is index.tsx, but this is where
-// all of the app logic resides.
-
 import {Component} from "react";
 import { Routes, Route, Link } from "react-router-dom";
 
@@ -30,7 +22,8 @@ import Home from "./routes/home";
 
 import EventBus from "./common/eventBus";
 import Storage from "./common/storage";
-import {userContext} from './common/userContext';
+import {userContext, IUserContext} from './common/userContext';
+// import {ThemeContext} from './common/userContext';
 
 // // // // for environment variables
 // // import path from "path";
@@ -44,36 +37,27 @@ type Props = {};
 
 type State = {
   user: User.User | null,
-  isMod: boolean,
-  isAdmin: boolean,
+  // isMod: boolean,
+  // isAdmin: boolean,
   hasError: boolean,
 }
 
 class App extends Component<Props, State> {
+  static contextType = userContext;
+  declare context: React.ContextType<typeof userContext>
+
   constructor(props: Props) {
     super(props);
     this.logOut = this.logOut.bind(this);
 
-    // Sets user info in constructor for when page gets reloaded after login
     const currentUser = Storage.getCurrentUserInfo();
-    if (currentUser) {
-      // Should not use setState in the constructor since the component is not mounted yet
-      // Instead, initialize the state directly
-      this.state = {
-        user: currentUser,
-        isMod: currentUser.getRole() === "MOD",
-        isAdmin: currentUser.getRole() === "ADMIN",
-        hasError: false,
-      }
-    } else {
-      this.state = {
-        user: currentUser,
-        isMod: false,
-        isAdmin: false,
-        hasError: false,
-      };
-    }
+    
+    this.state = {
+      user: currentUser,
+      hasError: false,
+    };
   }
+
 
   // https://reactjs.org/docs/react-component.html#componentdidmount
   // componentDidMount() is invoked immediately after
@@ -100,14 +84,19 @@ class App extends Component<Props, State> {
   async logOut() {
     await Authentication.logout();
     this.setState({
-      isMod: false,
-      isAdmin: false,
       user: null,
     });
   }
 
   render() {
-    const { user, isAdmin } = this.state;
+    const value : IUserContext = {
+      user: this.state.user,
+      setUserState: () => {
+        // Will trigger a rerendering of all child components of userContext.Provider
+        this.setState({user: Storage.getCurrentUserInfo()});
+      }
+    }
+
     if (this.state.hasError) {
       return <div>Couldn't load app UI</div>;
     }
@@ -129,13 +118,12 @@ class App extends Component<Props, State> {
   
           </div>
 
-          {/* Also show "sign up" if current user is an admin */}
-          {user ? (
+          {this.state.user ? (
             <div className="navbar-nav ml-auto">
               <li className="nav-item">
                 <Dropdown>
                   <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                    Welcome, {user.getUsername()}
+                    Welcome, {this.state.user.getUsername()}
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
@@ -145,10 +133,10 @@ class App extends Component<Props, State> {
                 </Dropdown>
               </li>
 
-              {isAdmin && (
+              {this.state.user.getRole() === "ADMIN" && (
               <li className="nav-item">
                 <Link to={"/register"} className="nav-link">
-                  Sign Up
+                  Register user
                 </Link>
               </li>
               )}
@@ -180,28 +168,46 @@ class App extends Component<Props, State> {
         it will get a 404 page when trying to access certain resources that
         would otherwise be available */}
         <div className="container mt-3">
-          {/* https://reactrouter.com/docs/en/v6/components/routes */}
-          {user ? (
+          {this.state.user ? (
             <Routes>
               {/* https://reactrouter.com/docs/en/v6/upgrading/v5
               If you want to match more of the URL because you have child routes use 
               a trailing * as in <Route path="users/*">. */}
+
               <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
               {/* if logged in, only show registration page for admin user */}
-              {isAdmin && (
+              {this.state.user.getRole() === "ADMIN" && (
                 <Route path="/register" element={<Register />} />
               )}
-              <userContext.Provider value={this.state.user}>
-                <Route path="/profile" element={<Profile />} />
-              </userContext.Provider>
+
+              {/* Profile needs to be wrapped in context 
+              element for context to be passed over to the profile element. */}
+              {/* /profile and /login both loading "Profile" element is a workaround
+              implemented due to limitations of "Navigate" component */}
+              {['profile', 'login'].map(path => <Route key={path} path={path} element={
+                <userContext.Provider value={value}>
+                  <Profile />
+                </userContext.Provider>
+              } />)}
+
+              {/* <Route path="/profile" element={
+                <userContext.Provider value={value}>
+                  <Profile />
+                </userContext.Provider>
+              }></Route> */}
+
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           ) : (
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={
+                <userContext.Provider value={value}>
+                  <Login />
+                </userContext.Provider>
+              }></Route>
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>

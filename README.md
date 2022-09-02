@@ -9,19 +9,6 @@ Each microservice's documentation is written in their respected folders in `READ
 Important to note, that depending on what grpc mode was defined when using protobuf, grpc-web will behave differently and may not having server or client side streaming
 [Read more here](https://github.com/grpc/grpc-web#wire-format-mode)
 
-
-### How this microservice works
-
-There's 3 roles:
-- regular user (USER)
-- moderator (MOD) - has the ability to delete comments
-- administrator (ADMIN) - has moderator's privileges. On top of that, can create other mods/admins and can upload videos.
-
-The registration window has input control and will redirect user 2 seconds to login page after a successful registration. After logging in, the user will be redirected to its profile page.
-
-The backend side additionally validates that input conforms to restrictions set on the frontend side.
-
-
 ### Get started (with HTTP 1.1)
 
 Change directory into the root of the project

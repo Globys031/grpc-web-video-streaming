@@ -2,6 +2,7 @@ import { Component } from "react";
 import { Navigate } from "react-router-dom";
 
 import {userContext} from '../common/userContext';
+import Storage from "../common/storage";
 
 // import User from "../protoLibrary/auth_pb";
 
@@ -47,26 +48,28 @@ export default class Profile extends Component<Props, State> {
 
     return (
       <div className="container">
-        {(this.state.userReady) ?
-          <div>
-            <header className="jumbotron">
-              <h3>
-                <strong>{this.context?.getUsername()}</strong> Profile
-              </h3>
-            </header>
-            <p>
-              <strong>Id:</strong>{" "}
-              {this.context?.getUserid()}
-            </p>
-            <p>
-              <strong>Email:</strong>{" "}
-              {this.context?.getEmail()}
-            </p>
-            <p>
-              <strong>Role:</strong>{" "}
-              {this.context?.getRole()}
-            </p>
-          </div> : null}
+
+      {this.context.user && (
+      <div>
+        <header className="jumbotron">
+          <h3>
+            <strong>{this.context.user?.getUsername()}</strong> Profile
+          </h3>
+        </header>
+        <p>
+          <strong>Id:</strong>{" "}
+          {this.context.user?.getUserid()}
+        </p>
+        <p>
+          <strong>Email:</strong>{" "}
+          {this.context.user?.getEmail()}
+        </p>
+        <p>
+          <strong>Role:</strong>{" "}
+          {this.context.user?.getRole()}
+        </p>
+      </div>
+      )}
       </div>
     );
   }

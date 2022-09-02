@@ -1,3 +1,4 @@
+// https://lightrun.com/answers/facebook-create-react-app-typescript-declare-field-causes-transpile-to-fail
 {
   "presets": [
      "react-app"

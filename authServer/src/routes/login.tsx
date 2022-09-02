@@ -11,6 +11,8 @@ import { FormGroup, FloatingLabel} from 'react-bootstrap'
 import * as Yup from "yup";
 
 import Authentication from "../auth/grpcMethods";
+import {userContext} from '../common/userContext';
+import Storage from "../common/storage";
 
 type Props = {};
 
@@ -24,15 +26,14 @@ type State = {
 };
 
 // https://reactjs.org/docs/components-and-props.html
-
-/**
- * It's important
- * to note that using your own history object is highly discouraged and may add
- * two versions of the history library to your bundles unless you use the same
- * version of the history library that React Router uses internally.
- */
 export default class Login extends Component<Props, State> {
-// export default class Login extends Component<HistoryRouterProps, State> {
+  // Please note that you can't use context in the same component
+  // where you use the Context provider because context gets the Context 
+  // from its nearest parent.
+  static contextType = userContext;
+  declare context: React.ContextType<typeof userContext>
+
+
   constructor(props: Props) {
     super(props);
     this.handleLogin = this.handleLogin.bind(this);
@@ -83,18 +84,23 @@ export default class Login extends Component<Props, State> {
     // Redirect a couple seconds after successful login
     if (successState === true) {
       setTimeout(() => {
-        this.setState({redirect: true});
+        /*
+        Set context from nested child component ("Login" in this case)
+        This will trigger rerender'ing of app.tsx, which in turn will trigger
+        rerendering of child components encapsulated by userContext.Provider
 
-        // // Reload window so that app.tsx can get updated user info.
-        // // User info is set in app.tsx constructor:
-        // // https://reactjs.org/docs/react-component.html#the-component-lifecycle
-        // window.location.reload();
+        After 2 seconds app.tsx will rerender itself as well as its userContext
+        child components. App.tsx is set up to load "Profile" component
+        if trying to access /login while logged in. This is a work-around
+        due to "Navigation" component limitations.
+        */
+        this.context.setUserState();
       }, 2000);
     }
   }
 
   render() {
-    const { loading, errorMsg, submitted, redirect } = this.state;
+    const { loading, errorMsg, submitted } = this.state;
 
     const initialValues = {
       username: "",
@@ -134,7 +140,7 @@ export default class Login extends Component<Props, State> {
                 <FormGroup>
                   <FloatingLabel controlId="floatingPassword" label="Password">
                     {/* A placeholder is required on each <Form.Control> */}
-                    <Field name="password" type="text" className="form-control" placeholder="examplepassword" />
+                    <Field name="password" type="password" className="form-control" placeholder="examplepassword" />
                   </FloatingLabel>
                   <ErrorMessage
                     name="password"
@@ -143,7 +149,6 @@ export default class Login extends Component<Props, State> {
                   />
                 </FormGroup>
                 <br></br>
-
 
                 <div className="form-group">
                   <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
@@ -172,10 +177,6 @@ export default class Login extends Component<Props, State> {
                     Successful login. Redirecting shortly.
                   </div>
                 </div>
-              )}
-              {/* redirect a couple seconds after successful registration */}
-              {(redirect) && (
-                <Navigate to="/profile"></Navigate>
               )}
             </Form>
           </Formik>

@@ -27,6 +27,8 @@ class Authentication {
     registerRequest.setPassword(password);
     registerRequest.setRole(role);
 
+    console.log("role:", role)
+
     // https://github.com/grpc/grpc-web/pull/1063/files
     // The "deadline" header is used to timeout xhr http request
     // and it converts deadline header to "grpc-timeout" header.
